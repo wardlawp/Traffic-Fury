@@ -3,31 +3,44 @@ using System.Collections;
 
 abstract public class Person : MonoBehaviour
 {
-    protected void moveWithPlatform()
+    protected float getPlatformSpeed()
     {
-        GameObject platformVehicle = findPlatformVehicle();
-        
-        if(platformVehicle != null)
+        GameObject platformVehicle = findPlatformVehicle(GetComponent<Renderer>().bounds);
+
+        if (platformVehicle != null)
         {
             MovingPlatform platform = platformVehicle.GetComponent<MovingPlatform>();
-            transform.Translate(0, platform.directionalSpeedNormalized(), 0);
+            return platform.directionalSpeedNormalized();
         }
 
+        return 0.0f;
     }
 
-    private GameObject findPlatformVehicle()
+    protected GameObject findPlatformVehicle(Vector3 position)
     {
         GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
 
         foreach (GameObject vehicle in vehicles)
         {
-            if (onPlatVehicle(vehicle)) return vehicle;
+            if (onPlatVehicle(vehicle, position)) return vehicle;
         }
 
         return null;
     }
 
-    private bool onPlatVehicle(GameObject vehicle)
+    protected GameObject findPlatformVehicle(Bounds bounds)
+    {
+        GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
+
+        foreach (GameObject vehicle in vehicles)
+        {
+            if (onPlatVehicle(vehicle, bounds)) return vehicle;
+        }
+
+        return null;
+    }
+
+    private bool onPlatVehicle(GameObject vehicle, Vector3 position)
     {
         var bounds = GetComponent<Renderer>().bounds;
         var vehicleBounds = vehicle.GetComponent<Renderer>().bounds;
@@ -37,7 +50,24 @@ abstract public class Person : MonoBehaviour
         {
             return false;
         }
-        else if (bounds.Intersects(vehicleBounds))
+        else if (vehicleBounds.Contains(position))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool onPlatVehicle(GameObject vehicle, Bounds bounds)
+    {
+        var vehicleBounds = vehicle.GetComponent<Renderer>().bounds;
+        var isPlat = vehicle.GetComponent<MovingPlatform>() != null;
+
+        if (!isPlat)
+        {
+            return false;
+        }
+        else if (vehicleBounds.Intersects(bounds))
         {
             return true;
         }
