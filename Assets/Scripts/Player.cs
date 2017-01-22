@@ -14,6 +14,7 @@ public class Player : PlatformRider
     const char DOWN = 'D';
 
 
+    public float yDisplacement = 0.0f;
     public bool dead = false;
     public bool jumping = false;
     public bool onPlatfrom = false;
@@ -84,7 +85,7 @@ public class Player : PlatformRider
             beginJump(timeNormalizedInput);
         }
 
-        transform.Translate(playerMotion);
+        movePlayer(playerMotion);
         setPlayerRenderDirection(playerMotion);
     }
 
@@ -108,11 +109,16 @@ public class Player : PlatformRider
         }
     }
 
+    private void movePlayer(Vector3 movement)
+    {
+        yDisplacement = movement.y;
+        transform.Translate(movement);
+    }
 
     private void handleJump()
     {
         remainingJumpTime -= Time.deltaTime;
-        transform.Translate(jumpingVector);
+        movePlayer(jumpingVector);
   
     }
 
