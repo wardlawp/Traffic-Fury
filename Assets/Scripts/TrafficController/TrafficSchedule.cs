@@ -66,9 +66,14 @@ namespace Assets.Scripts.TrafficController
     public class TrafficEntryBuilder
     {
         private TrafficScheduleEntry entry;
+        private static Random rand;
 
         public static TrafficEntryBuilder start()
         {
+            if(rand == null)
+            {
+                rand = new Random();
+            }
             return new TrafficEntryBuilder();
         }
 
@@ -76,6 +81,7 @@ namespace Assets.Scripts.TrafficController
         public TrafficEntryBuilder()
         {
             entry = new TrafficScheduleEntry();
+            entry.carType = rand.Next(0, 2);
         }
 
         public TrafficEntryBuilder setLane(int lane)
@@ -106,13 +112,13 @@ namespace Assets.Scripts.TrafficController
             return this;
         }
 
-        public TrafficEntryBuilder accelerateAt(float time, float newSpeed, float accelDuration)
+        public TrafficEntryBuilder accelerateAt(float time, float rate, float accelDuration)
         {
             TrafficEvent e = new TrafficEvent();
 
             e.type = TrafficEvent.types.Accelerate;
             e.time = time;
-            e.speed = newSpeed;
+            e.rate = rate;
             e.duration = accelDuration;
 
             entry.events.Add(e);
@@ -134,7 +140,7 @@ namespace Assets.Scripts.TrafficController
 
         public TrafficScheduleEntry get()
         {
-            if (!entry.hasAppearance())
+            if (entry.appearance() == null)
             {
                 throw new BuilderException("TrafficScheduleEntry must have appear event");
             }
@@ -157,17 +163,17 @@ namespace Assets.Scripts.TrafficController
 
         public List<TrafficEvent> events { get; set; }
 
-        public bool hasAppearance()
+        public TrafficEvent appearance()
         {
             foreach (TrafficEvent e in events)
             {
                 if (e.type == TrafficEvent.types.Appear)
                 {
-                    return true;
+                    return e;
                 }
             }
 
-            return false;
+            return null;
         }
 
         public float appearAt()
@@ -210,7 +216,10 @@ namespace Assets.Scripts.TrafficController
 
         public bool appearAtBottom;
         public float time;
+
         public float speed;
+
         public float duration;
+        public float rate;
     }
 }
