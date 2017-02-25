@@ -3,13 +3,7 @@ using System.Collections;
 
 public class Vehicle : MovingPlatform
 {
-
-	void Start()
-    {
-	
-	}
-	
-	// Update is called once per frame
+    // Update is called once per frame
 	void Update()
     {
         moveDownScreen();
@@ -17,7 +11,6 @@ public class Vehicle : MovingPlatform
 
     void moveDownScreen()
     {
-        float speedNormalized = speed * Time.deltaTime;
-        transform.Translate(0, -speedNormalized, 0);
+        transform.Translate(0, directionalSpeedNormalized(), 0);
     }
 }

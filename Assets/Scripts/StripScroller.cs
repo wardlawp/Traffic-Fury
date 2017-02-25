@@ -19,15 +19,17 @@ public class StripScroller : MonoBehaviour
     }
     void Update()
     {
-        float displacement = player.yDisplacement;
+        moveBackgrounds();
+    }
 
+    void moveBackgrounds()
+    {
         int middle = (currbackground + 1) % numBackgrounds;
 
-        if(playerObj.transform.position.y < backgrounds[middle].transform.position.y)
+        if (playerObj.transform.position.y < backgrounds[middle].transform.position.y)
         {
-            backgrounds[currbackground].transform.Translate(0, (numBackgrounds -1) * -backgroundLength, 0);
+            backgrounds[currbackground].transform.Translate(0, (numBackgrounds - 1) * -backgroundLength, 0);
             currbackground = (currbackground + 1) % numBackgrounds;
         }
-
     }
 }

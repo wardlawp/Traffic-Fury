@@ -8,22 +8,18 @@ public class Player : PlatformRider
     public float jumpTime = 0.3f;
     public float jumpSeed = 1.6f;
 
-    const char LEFT = 'L';
-    const char RIGHT = 'R';
-    const char UP = 'U';
-    const char DOWN = 'D';
+    const char LEFT = 'l';
+    const char RIGHT = 'r';
+    const char UP = 'u';
+    const char DOWN = 'd';
 
-
-    public float yDisplacement = 0.0f;
     public bool dead = false;
     public bool jumping = false;
     public bool onPlatfrom = false;
     public char direction = DOWN;
 
-    //Character Jumping
     private float remainingJumpTime = 0.0f;
     private float platformMomentum;
-
     private float platformSpeed = 0.0f;
 
     private Animator anim;
@@ -34,14 +30,17 @@ public class Player : PlatformRider
     }
 
 
-	void Update () {
-        getVehicles();
+    new void Update () {
+        base.Update();
         calculateStates();
-
+        
         if (!dead){
             handleMovment();
         }
+
+        setAnimationStates();
     }
+
 
     #region Calculate States
 
@@ -65,7 +64,7 @@ public class Player : PlatformRider
 
     private bool onPlat()
     {
-        return (findPlatformVehicle(GetComponent<Renderer>().bounds) != null);
+        return (findPlatformVehicle(transform.position) != null);
     }
 
     #endregion
@@ -73,11 +72,9 @@ public class Player : PlatformRider
     void handleMovment()
     {
         //if player wants to jump and they are on vehicle and not jumping then goto jumping
-        if(canJump() && (Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.Space)))
+        if(canJump() && jumpKeyPressed())
         {
-            remainingJumpTime = jumpTime;
-            jumping = true;
-            platformMomentum = platformSpeed;
+            startJump();
         }
 
         Vector3 input = getInputVector();
@@ -85,27 +82,45 @@ public class Player : PlatformRider
 
         if (jumping)
         {
-            anim.SetBool("jumping", true);
-            remainingJumpTime -= Time.deltaTime;
-            Vector3 playerMotion = new Vector3(timeNormalizedInput.x * jumpSeed, (timeNormalizedInput.y * jumpSeed) + platformMomentum, 0);
-            movePlayer(playerMotion);
+            handleJumpMovement(timeNormalizedInput);
         }
         else
         {
-            anim.SetBool("jumping", false);
-            Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed, 0);
-            movePlayer(playerMotion);
+            handlePlatformMovment(timeNormalizedInput);
         }
+    }
 
+    void handleJumpMovement(Vector3 timeNormalizedInput)
+    {
        
+        remainingJumpTime -= Time.deltaTime;
+        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * jumpSeed, (timeNormalizedInput.y * jumpSeed) + platformMomentum, 0);
+        movePlayer(playerMotion);
+    }
+
+    void handlePlatformMovment(Vector3 timeNormalizedInput)
+    {
+        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed, 0);
+        movePlayer(playerMotion);
+    }
+
+    void startJump()
+    {
+        remainingJumpTime = jumpTime;
+        jumping = true;
+        platformMomentum = platformSpeed;
+    }
+
+    bool jumpKeyPressed()
+    {
+
+        return (Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.Space));
     }
 
     bool canJump()
     {
         return (!jumping && onPlatfrom);
     }
-
-
 
 
     private void setPlayerRenderDirection(Vector3 playerMotion)
@@ -130,37 +145,31 @@ public class Player : PlatformRider
 
     private void movePlayer(Vector3 movement)
     {
-        yDisplacement = movement.y;
+        setPlayerRenderDirection(movement);
         transform.Translate(movement);
-    }
-
-
-
-
-
-    private bool aboutToJump(Vector3 movement)
-    {
-        Vector3 nextPosition = transform.position + movement;
-        return (findPlatformVehicle(nextPosition) == null);
     }
 
     private Vector3 getInputVector()
     {
         Vector3 input = new Vector3();
 
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
             input.y += 1;
 
-        if (Input.GetKey(KeyCode.DownArrow))
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
             input.y -= 1;
 
-        if (Input.GetKey(KeyCode.RightArrow))
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             input.x += 1;
 
-        if (Input.GetKey(KeyCode.LeftArrow))
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
             input.x -= 1;
 
         return input;
     }
 
+    void setAnimationStates()
+    {
+        anim.SetBool("jumping", jumping);
+    }
 }

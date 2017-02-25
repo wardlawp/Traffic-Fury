@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using Assets.Scripts.TrafficController;
+using Assets.Scripts.Traffic;
 
 
 public class Tuple<T1, T2>
@@ -25,17 +25,14 @@ public class TrafficController : MonoBehaviour {
     public float yOffset;
     public int numLanes;
 
-    private TrafficQue que;
-    private List<Tuple<GameObject, TrafficScheduleEntry>> runningCars;
+    private Queue queue;
+    private List<Tuple<GameObject, ScheduleEntry>> runningCars;
 
 	// Use this for initialization
 	void Start () {
-        runningCars = new List<Tuple<GameObject, TrafficScheduleEntry>>();
+        runningCars = new List<Tuple<GameObject, ScheduleEntry>>();
 
         buildQue();
-        //Debug.Log(que.lenght);
-        //Debug.Log(que.getCurrentsEntries(5f)[0].lane);
-        //Debug.Log(que.lenght);
     }
 
     
@@ -43,13 +40,13 @@ public class TrafficController : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        foreach(TrafficScheduleEntry e in que.getCurrentsEntries(Time.time))
+        foreach(ScheduleEntry e in queue.getCurrentEntries(Time.time))
         {
             createCar(e);
         }
 
-        List<Tuple<GameObject, TrafficScheduleEntry>> toDel = new List<Tuple<GameObject, TrafficScheduleEntry>>();
-        foreach (Tuple<GameObject, TrafficScheduleEntry> rCar in runningCars)
+        List<Tuple<GameObject, ScheduleEntry>> toDel = new List<Tuple<GameObject, ScheduleEntry>>();
+        foreach (Tuple<GameObject, ScheduleEntry> rCar in runningCars)
         {
             foreach (TrafficEvent e in rCar.right.events)
             {
@@ -73,7 +70,7 @@ public class TrafficController : MonoBehaviour {
             }
         }
 
-        foreach(Tuple < GameObject, TrafficScheduleEntry > rCar in toDel)
+        foreach(Tuple < GameObject, ScheduleEntry> rCar in toDel)
         {
             Destroy(rCar.left);
             runningCars.Remove(rCar);
@@ -82,7 +79,7 @@ public class TrafficController : MonoBehaviour {
         //Todo avoid collisions
     }
 
-    void createCar(TrafficScheduleEntry e)
+    void createCar(ScheduleEntry e)
     {
         Vector3 position = calculatePosition(e.lane, e.appearAtBottom());
 
@@ -95,7 +92,7 @@ public class TrafficController : MonoBehaviour {
         adjustCar(car, e.appearAtBottom());
 
         car.GetComponent<MovingPlatform>().speed = e.appearance().speed;
-        runningCars.Add(new Tuple<GameObject, TrafficScheduleEntry>(car, e));
+        runningCars.Add(new Tuple<GameObject, ScheduleEntry>(car, e));
     }
 
     private void adjustCar(GameObject car, bool appearAtBottom)
@@ -159,23 +156,23 @@ public class TrafficController : MonoBehaviour {
 
     private void buildQue()
     {
-        que = new TrafficQue();
-
-        float time = 1.0f;
+        queue = new Queue();
+        ScheduleEntryBuilder.carIdxMax = 3;
+        float time = 13.7f;
 
         //0:00
 
         //~0:14 Stationary cars
-        que.addEntry(
-            TrafficEntryBuilder.start()
+        queue.addEntry(
+            ScheduleEntryBuilder.start()
                 .setLane(6)
                 .appearAt(time + 0.2f, 0f)
                 .explodeAt(time + 5.0f) 
                 .get()
             );
 
-        que.addEntry(
-            TrafficEntryBuilder.start()
+        queue.addEntry(
+            ScheduleEntryBuilder.start()
                 .setLane(6)
                 .appearAt(time + 0.4f, 0f)
                 .accelerateAt(time + 1.0f, 0.5f, 4f)
@@ -183,8 +180,8 @@ public class TrafficController : MonoBehaviour {
                 .get()
             );
 
-        que.addEntry(
-           TrafficEntryBuilder.start()
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
                .setLane(6)
                .appearAt(time + 0.6f, 0f)
                .accelerateAt(time + 1.0f, 0.6f, 3.2f)
@@ -192,8 +189,8 @@ public class TrafficController : MonoBehaviour {
                .get()
            );
 
-        que.addEntry(
-           TrafficEntryBuilder.start()
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
                .setLane(5)
                .appearAt(time + 1f, .6f)
                .accelerateAt(time + 3.0f, 0.55f, 1.5f)
@@ -201,8 +198,8 @@ public class TrafficController : MonoBehaviour {
                .get()
            );
 
-        que.addEntry(
-           TrafficEntryBuilder.start()
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
                .setLane(5)
                .appearAt(time + 2f, .6f)
                .accelerateAt(time + 3f, 0.7f, 1.4f)
@@ -211,95 +208,97 @@ public class TrafficController : MonoBehaviour {
                .get()
            );
 
-        que.addEntry(
-           TrafficEntryBuilder.start()
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
                .setLane(4)
                .appearAt(time + 0.6f, 0f)
-               .accelerateAt(time + 2.1f, 0.7f, 2f)
-               .accelerateAt(time + 4.1f, 1.5f, 1f)
+               .accelerateAt(time + 2.1f, 0.7f, 2.2f)
                .accelerateAt(time + 4.1f, 1.5f, 1f)
                .explodeAt(time + 13.0f)
                .get()
            );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
+               .setLane(4)
+               .appearAt(time + 2f, 0.3f, false)
+               .accelerateAt(time + 2.1f, 0.7f, 2.2f)
+               .accelerateAt(time + 4.1f, 1.3f, 1f)
+               .explodeAt(time + 14.0f)
+               .get()
+           );
+
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(3)
               .appearAt(time + 0.6f, 0f)
               .accelerateAt(time + 1.9f, 1.2f, 2f)
               .accelerateAt(time + 3.9f, -0.3f, 1f)
+              .accelerateAt(time + 6f, +0.3f, 1.5f)
+              .accelerateAt(time + 11f, -0.3f, 2.5f)
               .explodeAt(time + 14.0f)
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
-              .setLane(2)
-              .appearAt(time + 0.5f, 0f)
-              .accelerateAt(time + 1.9f, 0.65f, 3.5f)
-              .explodeAt(time + 14.0f)
-              .get()
-          );
-
-        que.addEntry(
-         TrafficEntryBuilder.start()
+        queue.addEntry(
+         ScheduleEntryBuilder.start()
              .setLane(2)
              .appearAt(time + 7f, 1.8f)
-             .accelerateAt(time + 13f, 0.8f, 3f)
+             .accelerateAt(time + 13f, 0.8f, 1f)
              .explodeAt(time + 16.0f)
              .get()
          );
 
-        que.addEntry(
-        TrafficEntryBuilder.start()
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
             .setLane(2)
             .appearAt(time + 8f, 1.8f)
-            .accelerateAt(time + 13.8f, 1f, 3f)
+            .accelerateAt(time + 13f, 0.8f, 1f)
             .explodeAt(time + 19.0f)
             .get()
         );
 
 
         //~0:30 Moving column
-        time += 16f;
+        time += 15f;
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(1)
-              .appearAt(time, 4f, false)
+              .appearAt(time, 4.5f, false)
               .explodeAt(time + 15f)
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(1)
-              .appearAt(time + 0.4f, 4f, false)
+              .appearAt(time + 0.4f, 4.5f, false)
               .explodeAt(time + 15f)
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(1)
-              .appearAt(time + 0.7f, 4f, false)
+              .appearAt(time + 0.7f, 4.5f, false)
               .explodeAt(time + 15f)
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(1)
-              .appearAt(time + 1.4f, 4f, false)
+              .appearAt(time + 1.4f, 4.5f, false)
               .explodeAt(time + 15f)
               .get()
           );
 
         //~0:44
-        time += 10f;
+        time += 11.5f;
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(2)
               .appearAt(time, 2.5f)
               .accelerateAt(time + 5f, 1, 0.5f)
@@ -307,8 +306,8 @@ public class TrafficController : MonoBehaviour {
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(2)
               .appearAt(time + 1.0f, 2.4f)
               .explodeAt(time + 19f)
@@ -316,8 +315,8 @@ public class TrafficController : MonoBehaviour {
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(3)
               .appearAt(40.0f, 2.5f)
               .accelerateAt(46.0f, 1, 0.5f)
@@ -325,8 +324,8 @@ public class TrafficController : MonoBehaviour {
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(3)
               .appearAt(time, 2.4f)
               .explodeAt(time + 19f)
@@ -334,8 +333,8 @@ public class TrafficController : MonoBehaviour {
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(4)
               .appearAt(time, 2.5f)
               .accelerateAt(time + 5f, -1, 0.3f)
@@ -344,8 +343,8 @@ public class TrafficController : MonoBehaviour {
               .get()
           );
 
-        que.addEntry(
-          TrafficEntryBuilder.start()
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
               .setLane(4)
               .appearAt(time + 1.0f, 2.4f)
               .explodeAt(time + 19f)
