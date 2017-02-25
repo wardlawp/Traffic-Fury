@@ -81,7 +81,7 @@ namespace Assets.Scripts.TrafficController
         public TrafficEntryBuilder()
         {
             entry = new TrafficScheduleEntry();
-            entry.carType = rand.Next(0, 2);
+            entry.carType = rand.Next(0, 3);
         }
 
         public TrafficEntryBuilder setLane(int lane)

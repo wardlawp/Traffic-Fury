@@ -22,10 +22,18 @@ public class Player : PlatformRider
 
     //Character Jumping
     private float remainingJumpTime = 0.0f;
-    private Vector3 jumpingVector;
+    private float platformMomentum;
 
     private float platformSpeed = 0.0f;
-	
+
+    private Animator anim;
+
+    void Start()
+    {
+        anim = GetComponent<Animator>();
+    }
+
+
 	void Update () {
         getVehicles();
         calculateStates();
@@ -64,30 +72,41 @@ public class Player : PlatformRider
 
     void handleMovment()
     {
-        if(jumping)
+        //if player wants to jump and they are on vehicle and not jumping then goto jumping
+        if(canJump() && (Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.Space)))
         {
-            handleJump();
+            remainingJumpTime = jumpTime;
+            jumping = true;
+            platformMomentum = platformSpeed;
         }
-        else if (onPlatfrom)
-        {
-            handlePlatformMovement();
-        }
-    }
 
-    void handlePlatformMovement()
-    {
         Vector3 input = getInputVector();
         Vector3 timeNormalizedInput = input.normalized * Time.deltaTime;
-        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed, 0);
 
-        if (aboutToJump(playerMotion))
+        if (jumping)
         {
-            beginJump(timeNormalizedInput);
+            anim.SetBool("jumping", true);
+            remainingJumpTime -= Time.deltaTime;
+            Vector3 playerMotion = new Vector3(timeNormalizedInput.x * jumpSeed, (timeNormalizedInput.y * jumpSeed) + platformMomentum, 0);
+            movePlayer(playerMotion);
+        }
+        else
+        {
+            anim.SetBool("jumping", false);
+            Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed, 0);
+            movePlayer(playerMotion);
         }
 
-        movePlayer(playerMotion);
-        setPlayerRenderDirection(playerMotion);
+       
     }
+
+    bool canJump()
+    {
+        return (!jumping && onPlatfrom);
+    }
+
+
+
 
     private void setPlayerRenderDirection(Vector3 playerMotion)
     {
@@ -115,19 +134,7 @@ public class Player : PlatformRider
         transform.Translate(movement);
     }
 
-    private void handleJump()
-    {
-        remainingJumpTime -= Time.deltaTime;
-        movePlayer(jumpingVector);
-  
-    }
 
-    private void beginJump(Vector3 timeNormalizedInput)
-    {
-        remainingJumpTime = jumpTime;
-        jumpingVector = new Vector3(timeNormalizedInput.x*jumpSeed, (timeNormalizedInput.y*jumpSeed) + platformSpeed);
-        
-    }
 
 
 

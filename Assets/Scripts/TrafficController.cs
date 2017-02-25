@@ -92,9 +92,50 @@ public class TrafficController : MonoBehaviour {
                 new Quaternion()
             );
 
+        adjustCar(car, e.appearAtBottom());
 
         car.GetComponent<MovingPlatform>().speed = e.appearance().speed;
         runningCars.Add(new Tuple<GameObject, TrafficScheduleEntry>(car, e));
+    }
+
+    private void adjustCar(GameObject car, bool appearAtBottom)
+    {
+        GameObject[] otherCars = GameObject.FindGameObjectsWithTag("Vehicle");
+
+        bool colliding = true;
+
+        while (colliding)
+        {
+            colliding = false;
+
+            foreach(GameObject otherCar in otherCars)
+            {
+
+                if (otherCar == car) continue;
+
+                if (car.GetComponent<Renderer>().bounds.Intersects(otherCar.GetComponent<Renderer>().bounds))
+                {
+                    colliding = true;
+                    break;
+                }
+            }
+
+            if (colliding)
+            {
+                float dY = 0.0f;
+                if(appearAtBottom)
+                {
+                    dY = -yOffset * 0.05f;
+                }
+                else
+                {
+                    dY = +yOffset * 0.05f;
+                }
+
+                car.transform.Translate(new Vector3(0, dY));
+            }
+        }
+
     }
 
     private Vector3 calculatePosition(int lane, bool appearAtBottom)
@@ -120,124 +161,158 @@ public class TrafficController : MonoBehaviour {
     {
         que = new TrafficQue();
 
+        float time = 1.0f;
+
         //0:00
 
         //~0:14 Stationary cars
         que.addEntry(
             TrafficEntryBuilder.start()
                 .setLane(6)
-                .appearAt(14.2f, 0f)
-                .explodeAt(19f) 
+                .appearAt(time + 0.2f, 0f)
+                .explodeAt(time + 5.0f) 
                 .get()
             );
 
         que.addEntry(
             TrafficEntryBuilder.start()
                 .setLane(6)
-                .appearAt(14.4f, 0f)
-                .explodeAt(20f)
+                .appearAt(time + 0.4f, 0f)
+                .accelerateAt(time + 1.0f, 0.5f, 4f)
+                .explodeAt(time + 6.0f)
                 .get()
             );
 
         que.addEntry(
            TrafficEntryBuilder.start()
                .setLane(6)
-               .appearAt(14.6f, 0f)
-               .explodeAt(21f)
+               .appearAt(time + 0.6f, 0f)
+               .accelerateAt(time + 1.0f, 0.6f, 3.2f)
+               .explodeAt(time + 7.0f)
                .get()
            );
 
         que.addEntry(
            TrafficEntryBuilder.start()
                .setLane(5)
-               .appearAt(14.4f, 0f)
-               .explodeAt(25f)
+               .appearAt(time + 1f, .6f)
+               .accelerateAt(time + 3.0f, 0.55f, 1.5f)
+               .explodeAt(time + 11.0f)
                .get()
            );
 
         que.addEntry(
            TrafficEntryBuilder.start()
                .setLane(5)
-               .appearAt(14.6f, 0f)
-               .explodeAt(26f)
+               .appearAt(time + 2f, .6f)
+               .accelerateAt(time + 3f, 0.7f, 1.4f)
+               .accelerateAt(time + 5.4f, -0.2f, 0.5f)
+               .explodeAt(time + 12.0f)
                .get()
            );
 
         que.addEntry(
            TrafficEntryBuilder.start()
                .setLane(4)
-               .appearAt(14.6f, 0f)
-               .explodeAt(27f)
+               .appearAt(time + 0.6f, 0f)
+               .accelerateAt(time + 2.1f, 0.7f, 2f)
+               .accelerateAt(time + 4.1f, 1.5f, 1f)
+               .accelerateAt(time + 4.1f, 1.5f, 1f)
+               .explodeAt(time + 13.0f)
                .get()
            );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(3)
-              .appearAt(14.6f, 0f)
-              .explodeAt(28f)
+              .appearAt(time + 0.6f, 0f)
+              .accelerateAt(time + 1.9f, 1.2f, 2f)
+              .accelerateAt(time + 3.9f, -0.3f, 1f)
+              .explodeAt(time + 14.0f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(2)
-              .appearAt(14.6f, 0f)
-              .explodeAt(32f)
+              .appearAt(time + 0.5f, 0f)
+              .accelerateAt(time + 1.9f, 0.65f, 3.5f)
+              .explodeAt(time + 14.0f)
               .get()
           );
+
+        que.addEntry(
+         TrafficEntryBuilder.start()
+             .setLane(2)
+             .appearAt(time + 7f, 1.8f)
+             .accelerateAt(time + 13f, 0.8f, 3f)
+             .explodeAt(time + 16.0f)
+             .get()
+         );
+
+        que.addEntry(
+        TrafficEntryBuilder.start()
+            .setLane(2)
+            .appearAt(time + 8f, 1.8f)
+            .accelerateAt(time + 13.8f, 1f, 3f)
+            .explodeAt(time + 19.0f)
+            .get()
+        );
 
 
         //~0:30 Moving column
+        time += 16f;
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(1)
-              .appearAt(29.0f, 3f, false)
-              .explodeAt(44f)
+              .appearAt(time, 4f, false)
+              .explodeAt(time + 15f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(1)
-              .appearAt(29.4f, 3f, false)
-              .explodeAt(44f)
+              .appearAt(time + 0.4f, 4f, false)
+              .explodeAt(time + 15f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(1)
-              .appearAt(29.7f, 3f, false)
-              .explodeAt(44f)
+              .appearAt(time + 0.7f, 4f, false)
+              .explodeAt(time + 15f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(1)
-              .appearAt(30.2f, 3f, false)
-              .explodeAt(44f)
+              .appearAt(time + 1.4f, 4f, false)
+              .explodeAt(time + 15f)
               .get()
           );
 
         //~0:44
+        time += 10f;
+
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(2)
-              .appearAt(40.0f, 2.5f)
-              .accelerateAt(45.0f, 1, 0.5f)
-              .explodeAt(59f)
+              .appearAt(time, 2.5f)
+              .accelerateAt(time + 5f, 1, 0.5f)
+              .explodeAt(time + 19f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(2)
-              .appearAt(41.0f, 2.4f)
-              .explodeAt(59f)
-              .accelerateAt(45.1f, 1, 0.6f)
+              .appearAt(time + 1.0f, 2.4f)
+              .explodeAt(time + 19f)
+              .accelerateAt(time + 5.1f, 1, 0.6f)
               .get()
           );
 
@@ -246,35 +321,35 @@ public class TrafficController : MonoBehaviour {
               .setLane(3)
               .appearAt(40.0f, 2.5f)
               .accelerateAt(46.0f, 1, 0.5f)
-              .explodeAt(59f)
+              .explodeAt(time + 19f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(3)
-              .appearAt(43.0f, 2.4f)
-              .explodeAt(59f)
-              .accelerateAt(47.1f, 1, 0.6f)
+              .appearAt(time, 2.4f)
+              .explodeAt(time + 19f)
+              .accelerateAt(time + 7.1f, 1, 0.6f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(4)
-              .appearAt(40.0f, 2.5f)
-              .accelerateAt(45.0f, -1, 0.3f)
-              .accelerateAt(45.4f, +1, 1.3f)
-              .explodeAt(59f)
+              .appearAt(time, 2.5f)
+              .accelerateAt(time + 5f, -1, 0.3f)
+              .accelerateAt(time + 5.4f, +1, 1.3f)
+              .explodeAt(time + 19f)
               .get()
           );
 
         que.addEntry(
           TrafficEntryBuilder.start()
               .setLane(4)
-              .appearAt(41.0f, 2.4f)
-              .explodeAt(59f)
-              .accelerateAt(45.1f, 1, 0.7f)
+              .appearAt(time + 1.0f, 2.4f)
+              .explodeAt(time + 19f)
+              .accelerateAt(time + 5.1f, 1, 0.7f)
               .get()
           );
     }
