@@ -13,4 +13,9 @@ public class Vehicle : MovingPlatform
     {
         transform.Translate(0, directionalSpeedNormalized(), 0);
     }
+
+    public void accerlate(float rate)
+    {
+        speed += Time.deltaTime*rate;
+    }
 }

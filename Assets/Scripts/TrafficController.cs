@@ -3,144 +3,173 @@ using System.Collections.Generic;
 using Assets.Scripts.Traffic;
 
 
-public class Tuple<T1, T2>
-{
-    public T1 left { get; private set; }
-    public T2 right { get; private set; }
-
-    internal Tuple(T1 left, T2 right)
-    {
-        this.left = left;
-        this.right = right;
-    }
-}
-
 public class TrafficController : MonoBehaviour {
 
     public GameObject[] carProtoTypes;
-    public Camera camera;
+    public Camera levelCamera;
 
+    // Lane information for spawning cars
     public float leftLaneX;
     public float rightLaneX;
     public float yOffset;
     public int numLanes;
 
+    // The Traffic que and currently running cars
     private Queue queue;
     private List<Tuple<GameObject, ScheduleEntry>> runningCars;
+    private System.Random rand;
 
-	// Use this for initialization
 	void Start () {
+        rand = new System.Random();
         runningCars = new List<Tuple<GameObject, ScheduleEntry>>();
-
         buildQue();
     }
 
-    
-
-
-    // Update is called once per frame
     void Update () {
-        foreach(ScheduleEntry e in queue.getCurrentEntries(Time.time))
+        createSchduledVehicles();
+        runSchedule();
+    }
+
+    void createSchduledVehicles()
+    {
+        foreach (ScheduleEntry e in queue.getCurrentEntries(Time.time))
         {
             createCar(e);
         }
+    }
 
-        List<Tuple<GameObject, ScheduleEntry>> toDel = new List<Tuple<GameObject, ScheduleEntry>>();
-        foreach (Tuple<GameObject, ScheduleEntry> rCar in runningCars)
+
+    void runSchedule()
+    {
+        List<Tuple<GameObject, ScheduleEntry>> toRemove = new List<Tuple<GameObject, ScheduleEntry>>();
+
+        foreach (Tuple<GameObject, ScheduleEntry> runningCar in runningCars)
         {
-            foreach (TrafficEvent e in rCar.right.events)
-            {
-                if (e.time < Time.time)
-                {
-                    if ((e.type == TrafficEvent.types.Accelerate) && ((e.time + e.duration) > Time.time))
-                    {
-                        MovingPlatform plat = rCar.left.GetComponent<MovingPlatform>();
-                        float currSpeed = plat.speed;
-                        float targetSpeed = e.speed;
+           bool removeVehicle =  runScheduledEvents(runningCar.left, runningCar.right);
 
-                        float newSpeed = currSpeed + Time.deltaTime * e.rate;
-                        plat.speed = newSpeed;
-                    }
-                    else if (e.type == TrafficEvent.types.Explode)
-                    {
-                        toDel.Add(rCar);
-                        //TODO
-                    }
-                }
+            if(removeVehicle)
+            {
+                toRemove.Add(runningCar);
             }
         }
 
-        foreach(Tuple < GameObject, ScheduleEntry> rCar in toDel)
+        removeVehicles(toRemove);
+    }
+
+    void removeVehicles(List<Tuple<GameObject, ScheduleEntry>> toRemove)
+    {
+        foreach (Tuple<GameObject, ScheduleEntry> rCar in toRemove)
         {
             Destroy(rCar.left);
             runningCars.Remove(rCar);
         }
+    }
 
-        //Todo avoid collisions
+
+    bool runScheduledEvents(GameObject vehicleObj, ScheduleEntry entry)
+    {
+        bool removeVehicle = false;
+        foreach (TrafficEvent e in entry.events)
+        {
+            if (e.occuring(Time.time))
+            {
+                if (e.type == TrafficEvent.types.Accelerate)
+                {
+                    vehicleObj.GetComponent<Vehicle>().accerlate(e.rate);
+                }
+
+                else if (e.type == TrafficEvent.types.Explode)
+                {
+                    removeVehicle = true;
+                }
+            }
+        }
+
+        return removeVehicle;
     }
 
     void createCar(ScheduleEntry e)
     {
-        Vector3 position = calculatePosition(e.lane, e.appearAtBottom());
+        Vector3 position = calculateVehicleStartPosition(e.lane, e.appearAtBottom());
 
         GameObject car = (GameObject) Instantiate(
-                carProtoTypes[e.carType], 
+                carProtoTypes[rand.Next(0, carProtoTypes.Length)], 
                 position, 
                 new Quaternion()
             );
 
-        adjustCar(car, e.appearAtBottom());
+        adjustCarToAvoidCollision(car, e.appearAtBottom());
 
-        car.GetComponent<MovingPlatform>().speed = e.appearance().speed;
+        car.GetComponent<Vehicle>().speed = e.appearance().speed;
         runningCars.Add(new Tuple<GameObject, ScheduleEntry>(car, e));
     }
 
-    private void adjustCar(GameObject car, bool appearAtBottom)
+    private void adjustCarToAvoidCollision(GameObject vehicleObj, bool appearAtBottom)
     {
-        GameObject[] otherCars = GameObject.FindGameObjectsWithTag("Vehicle");
-
         bool colliding = true;
+        int attempts = 0;
 
-        while (colliding)
+        while (colliding && (attempts < 10))
         {
-            colliding = false;
 
-            foreach(GameObject otherCar in otherCars)
-            {
-
-                if (otherCar == car) continue;
-
-                if (car.GetComponent<Renderer>().bounds.Intersects(otherCar.GetComponent<Renderer>().bounds))
-                {
-                    colliding = true;
-                    break;
-                }
-            }
+            colliding = isVehicleColliding(vehicleObj);
 
             if (colliding)
             {
-                float dY = 0.0f;
-                if(appearAtBottom)
-                {
-                    dY = -yOffset * 0.05f;
-                }
-                else
-                {
-                    dY = +yOffset * 0.05f;
-                }
+                nudgeVehicle(vehicleObj, appearAtBottom);
+            }
 
-                car.transform.Translate(new Vector3(0, dY));
+            attempts += 1;
+        }
+
+        if (attempts == 10)
+        {
+            //TODO: use better exception type
+            throw new System.Exception("Max attempts to adjust vehicle exceeded"); 
+        }
+    }
+
+    private void nudgeVehicle(GameObject vehicleObj, bool appearAtBottom)
+    {
+        float dY = 0.0f;
+        if (appearAtBottom)
+        {
+            dY = -yOffset * 0.05f;
+        }
+        else
+        {
+            dY = +yOffset * 0.05f;
+        }
+
+        vehicleObj.transform.Translate(new Vector3(0, dY));
+    }
+
+    private bool isVehicleColliding(GameObject vehicleObj)
+    {
+        GameObject[] otherCars = GameObject.FindGameObjectsWithTag("Vehicle"); //TODO use running cars instead?
+        Renderer vehicleImage = vehicleObj.GetComponent<Renderer>();
+
+        foreach (GameObject otherCar in otherCars)
+        {
+            if (otherCar == vehicleObj) continue;
+
+            Renderer otherImage = otherCar.GetComponent<Renderer>();
+
+            if (vehicleImage.bounds.Intersects(otherImage.bounds))
+            {
+                return true;
             }
         }
 
+        return false;
     }
 
-    private Vector3 calculatePosition(int lane, bool appearAtBottom)
+    private Vector3 calculateVehicleStartPosition(int lane, bool appearAtBottom)
     {
         float dx = (rightLaneX - leftLaneX) / numLanes;
         float x = leftLaneX + dx * (lane - 0.5f);
 
-        float y = camera.transform.position.y;
+        float y = levelCamera.transform.position.y;
 
         if(appearAtBottom)
         {
@@ -157,8 +186,7 @@ public class TrafficController : MonoBehaviour {
     private void buildQue()
     {
         queue = new Queue();
-        ScheduleEntryBuilder.carIdxMax = 3;
-        float time = 13.7f;
+        float time = 1f;
 
         //0:00
 
@@ -252,7 +280,7 @@ public class TrafficController : MonoBehaviour {
         queue.addEntry(
         ScheduleEntryBuilder.start()
             .setLane(2)
-            .appearAt(time + 8f, 1.8f)
+            .appearAt(time + 12f, 1.8f)
             .accelerateAt(time + 13f, 0.8f, 1f)
             .explodeAt(time + 19.0f)
             .get()

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Assets.Scripts.Traffic
 {
@@ -12,7 +10,6 @@ namespace Assets.Scripts.Traffic
             events = new List<TrafficEvent>();
         }
 
-        public int carType { get; set; }
         public int lane { get; set; }
 
         public List<TrafficEvent> events { get; set; }
@@ -75,5 +72,18 @@ namespace Assets.Scripts.Traffic
 
         public float duration;
         public float rate;
+
+        public bool occuring(float timeNow)
+        {
+            bool startOccured = (time < timeNow);
+
+            if(type == types.Accelerate)
+            {
+                bool endOccured = (time + duration) < timeNow;
+                return (startOccured && !endOccured);
+            }
+
+            return startOccured;
+        }
     }
 }

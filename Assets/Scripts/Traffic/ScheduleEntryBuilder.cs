@@ -3,48 +3,28 @@ using System;
 
 namespace Assets.Scripts.Traffic
 {
-
-    
-
     public class BuilderException: Exception
     {
         public BuilderException (string message): base(message) {}
     }
 
-
     public class ScheduleEntryBuilder
     {
         private ScheduleEntry entry;
-        private static Random rand;
-        public static int carIdxMax;
 
         public static ScheduleEntryBuilder start()
         {
-            if(rand == null)
-            {
-                rand = new Random();
-            }
-
             return new ScheduleEntryBuilder();
         }
-
 
         public ScheduleEntryBuilder()
         {
             entry = new ScheduleEntry();
-            entry.carType = rand.Next(0, carIdxMax);
         }
 
         public ScheduleEntryBuilder setLane(int lane)
         {
             entry.lane = lane;
-
-            return this;
-        }
-
-        public ScheduleEntryBuilder setCarType(int carType)
-        {
-            entry.carType = carType;
 
             return this;
         }
@@ -98,9 +78,5 @@ namespace Assets.Scripts.Traffic
 
             return entry;
         }
-
     }
-
-
-   
 }
