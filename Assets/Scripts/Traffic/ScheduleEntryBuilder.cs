@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 
-namespace Assets.Scripts.Traffic
+namespace Traffic
 {
     public class BuilderException: Exception
     {

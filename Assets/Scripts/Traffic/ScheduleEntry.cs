@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.Scripts.Traffic
+namespace Traffic
 {
     public class ScheduleEntry
     {
