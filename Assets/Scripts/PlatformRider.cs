@@ -23,7 +23,7 @@ abstract public class PlatformRider : MonoBehaviour
 
         if (platform != null)
         {
-            return platform.directionalSpeedNormalized();
+            return -platform.speed;
         }
       
         return 0.0f;

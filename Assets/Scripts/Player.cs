@@ -21,6 +21,7 @@ public class Player : PlatformRider
     private float remainingJumpTime = 0.0f;
     private float platformMomentum;
     private float platformSpeed = 0.0f;
+    private float dieTime = float.MaxValue;
 
     private Animator anim;
 
@@ -39,6 +40,12 @@ public class Player : PlatformRider
         }
 
         setAnimationStates();
+
+        //TODO remove short term hack below
+        if(Time.time > (dieTime + 5))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        }
     }
 
 
@@ -50,6 +57,12 @@ public class Player : PlatformRider
         jumping = inJump();
         platformSpeed = getPlatformSpeed(GetComponent<Renderer>().bounds);
         onPlatfrom = onPlat();
+
+        //TODO remove short term hack below
+        if (dead && (dieTime == float.MaxValue))
+        {
+            dieTime = Time.time;
+        }
     }
 
     private bool hitGround()
@@ -94,13 +107,13 @@ public class Player : PlatformRider
     {
        
         remainingJumpTime -= Time.deltaTime;
-        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * jumpSeed, (timeNormalizedInput.y * jumpSeed) + platformMomentum, 0);
+        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * jumpSeed, (timeNormalizedInput.y * jumpSeed) + platformMomentum*Time.deltaTime, 0);
         movePlayer(playerMotion);
     }
 
     void handlePlatformMovment(Vector3 timeNormalizedInput)
     {
-        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed, 0);
+        Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed*Time.deltaTime, 0);
         movePlayer(playerMotion);
     }
 
@@ -171,5 +184,6 @@ public class Player : PlatformRider
     void setAnimationStates()
     {
         anim.SetBool("jumping", jumping);
+        anim.SetBool("dead", dead);
     }
 }

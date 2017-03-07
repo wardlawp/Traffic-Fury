@@ -13,7 +13,7 @@ public class TrafficController : MonoBehaviour {
 	void Start () {
         spawner = GetComponent<VehicleSpawner>();
         runningCars = new List<Tuple<GameObject, ScheduleEntry>>();
-        queue = LevelQue.get();
+        queue = LevelQue.get(Time.time);
     }
 
     void Update () {
@@ -67,6 +67,11 @@ public class TrafficController : MonoBehaviour {
                 if (e.type == TrafficEvent.types.Accelerate)
                 {
                     vehicleObj.GetComponent<Vehicle>().accerlate(e.rate);
+                }
+
+                else if(e.type == TrafficEvent.types.InitiateExplosion)
+                {
+                    vehicleObj.GetComponent<Animator>().SetBool("initiateExplosion", true);
                 }
 
                 else if (e.type == TrafficEvent.types.Explode)

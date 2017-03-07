@@ -62,7 +62,7 @@ namespace Traffic
 
     public class TrafficEvent
     {
-        public enum types { Appear, Accelerate, Explode };
+        public enum types { Appear, Accelerate, InitiateExplosion, Explode };
         public types type;
 
         public bool appearAtBottom;

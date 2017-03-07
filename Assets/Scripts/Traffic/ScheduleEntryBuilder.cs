@@ -66,6 +66,14 @@ namespace Traffic
 
             entry.events.Add(e);
 
+            TrafficEvent be = new TrafficEvent();
+
+            be.type = TrafficEvent.types.InitiateExplosion;
+            be.time = time - 1;
+            be.duration = 0.1f;
+
+            entry.events.Add(be);
+
             return this;
         }
 
