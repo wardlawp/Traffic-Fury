@@ -5,44 +5,53 @@ public class LevelController : MonoBehaviour {
 
     public Player player;
     public float levelResetPause = 3f;
+    private float respawnDelay = 0.5f;
 
+    private AudioSource audioS;
     private TrafficController trafficController;
-    private float gameOverTime = 0f;
-    private float levelStartTime = 0f;
+    private float currentLevelProgress = 0f;
+    private float playerDiedTime = 0f;
+    
     private float respawnTime = 0f;
 
     private enum States { Playing, Died, Ressetting}
     private States gameState;
 
-    void Start () {
+    void Start ()
+    {
         gameState = States.Playing;
-        levelStartTime = Time.time;
+
+        audioS = GetComponent<AudioSource>();
         trafficController = GetComponent<TrafficController>();
-        trafficController.setQueue(LevelQue.get(Time.time));
+
+        trafficController.setQueue(LevelQue.get());
 	}
 
 	void Update () {
 
+        currentLevelProgress += Time.deltaTime;
+
         if (player.dead && (gameState == States.Playing))
         {
+            //Update state and schdule reset
             gameState = States.Died;
-            gameOverTime = Time.time;
+            playerDiedTime = Time.time;
         }
   
-        if ((gameState == States.Died) && (Time.time > (gameOverTime + levelResetPause)))
+        if ((gameState == States.Died) && (Time.time > (playerDiedTime + levelResetPause)))
         {
-            //Calculate time to reset to
-            float checkpointTime = LevelQue.findLatestSequence(Time.time - levelStartTime);
-            levelStartTime = checkpointTime;
-            gameOverTime = 0.0f;
+            //Calculate time in level to reset to
+            float checkpointTime = LevelQue.findCheckpointTime(currentLevelProgress);
+            currentLevelProgress = checkpointTime;
+            
 
             //Reset
             trafficController.reset();
-            trafficController.setQueue(LevelQue.get(0, checkpointTime));
-
+            trafficController.setQueue(LevelQue.get(checkpointTime));
+            playerDiedTime = 0.0f;
 
             //Prepare for respawn
-            respawnTime = Time.time + 1;
+            respawnTime = Time.time + respawnDelay;
             gameState = States.Ressetting;
         }
 
@@ -51,6 +60,8 @@ public class LevelController : MonoBehaviour {
             //Respawn
             trafficController.placePlayerOnFirstCar(player.gameObject);
             player.dead = false;
+
+            audioS.time = currentLevelProgress;
 
             //Progress to playing state
             respawnTime = 0.0f;

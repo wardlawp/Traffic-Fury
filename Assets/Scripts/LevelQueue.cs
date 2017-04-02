@@ -10,50 +10,59 @@ static class LevelQue
     /// <summary>
     /// The vehicle sequence for the entire level
     /// </summary>
+    /// <param name="skipForwardTime">
+    /// Optional parameter to skip some of the scedule for fast fowarding to a checkpoint
+    /// </param>
     /// <returns>
     /// Traffic/Queue
     /// </returns>
-    public static Queue get(float timeNow, float skipForwardTime = -1f)
+    public static Queue get(float skipForwardTime = 0f)
     {
-        if(skipForwardTime != -1f)
-        {
-            timeNow -= skipForwardTime;
-        }
-
         Queue queue = new Queue();
 
         if(shouldScheduleSequence(skipForwardTime, SEQUENCE_2_START))
         {
-            addSequence1(ref queue, timeNow + SEQUENCE_1_START);
+            addSequence1(ref queue,  SEQUENCE_1_START - skipForwardTime);
         }
         if (shouldScheduleSequence(skipForwardTime, SEQUENCE_3_START))
         {
-            addSequence2(ref queue, timeNow + SEQUENCE_2_START);
+            addSequence2(ref queue, SEQUENCE_2_START - skipForwardTime);
         }
 
-        addSequence3(ref queue, timeNow + SEQUENCE_3_START);
+        addSequence3(ref queue, SEQUENCE_3_START - skipForwardTime);
         
         return queue;
     }
 
 
-    static private bool shouldScheduleSequence(float skipForwardTime, float nextSequenceStart)
+    /// <summary>
+    /// Get the time to skip forward to based off the players time of death
+    /// </summary>
+    /// <param name="playerTimeOfDeath"></param>
+    /// <returns>float</returns>
+    static public float findCheckpointTime(float playerTimeOfDeath)
     {
-        return skipForwardTime < nextSequenceStart;
-    }
-
-    static public float findLatestSequence(float currentLevelTime)
-    {
-        if(currentLevelTime < SEQUENCE_2_START)
+        if(playerTimeOfDeath < SEQUENCE_2_START)
         {
             return SEQUENCE_1_START;
         }
-        else if (currentLevelTime < SEQUENCE_3_START)
+        else if (playerTimeOfDeath < SEQUENCE_3_START)
         {
             return SEQUENCE_2_START;
         }
 
         return SEQUENCE_3_START;
+    }
+
+    /// <summary>
+    /// Determine if the sequence should be scheduled based on the current skipForwardTime 
+    /// </summary>
+    /// <param name="skipForwardTime"></param>
+    /// <param name="nextSequenceStart"></param>
+    /// <returns>bool</returns>
+    static private bool shouldScheduleSequence(float skipForwardTime, float nextSequenceStart)
+    {
+        return skipForwardTime < nextSequenceStart;
     }
 
     /// <summary>
@@ -247,4 +256,6 @@ static class LevelQue
           );
 
     }
+
+
 }
