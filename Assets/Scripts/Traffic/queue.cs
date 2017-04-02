@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Traffic
 {
-    class Queue
+    public class Queue
     {
         private List<ScheduleEntry> list;
 

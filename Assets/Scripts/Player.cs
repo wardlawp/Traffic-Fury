@@ -21,7 +21,7 @@ public class Player : PlatformRider
     private float remainingJumpTime = 0.0f;
     private float platformMomentum;
     private float platformSpeed = 0.0f;
-    private float dieTime = float.MaxValue;
+    
 
     private Animator anim;
 
@@ -40,12 +40,6 @@ public class Player : PlatformRider
         }
 
         setAnimationStates();
-
-        //TODO remove short term hack below
-        if(Time.time > (dieTime + 5))
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-        }
     }
 
 
@@ -57,12 +51,6 @@ public class Player : PlatformRider
         jumping = inJump();
         platformSpeed = getPlatformSpeed(GetComponent<Renderer>().bounds);
         onPlatfrom = onPlat();
-
-        //TODO remove short term hack below
-        if (dead && (dieTime == float.MaxValue))
-        {
-            dieTime = Time.time;
-        }
     }
 
     private bool hitGround()

@@ -8,12 +8,31 @@ public class TrafficController : MonoBehaviour {
     private VehicleSpawner spawner;
     private Queue queue;
     private List<Tuple<GameObject, ScheduleEntry>> runningCars;
+    private float startTime;
     
+    public void setQueue(Queue queue)
+    {
+        this.queue = queue;
+    }
 
 	void Start () {
+        startTime = Time.time;
         spawner = GetComponent<VehicleSpawner>();
         runningCars = new List<Tuple<GameObject, ScheduleEntry>>();
-        queue = LevelQue.get(Time.time);
+    }
+
+    public void reset()
+    {
+        startTime = Time.time;
+        this.queue = null;
+        List<Tuple<GameObject, ScheduleEntry>> toRemove = new List<Tuple<GameObject, ScheduleEntry>>();
+
+        foreach (Tuple<GameObject, ScheduleEntry> runningCar in runningCars)
+        {
+                toRemove.Add(runningCar);
+        }
+
+        removeVehicles(toRemove);
     }
 
     void Update () {
@@ -21,9 +40,17 @@ public class TrafficController : MonoBehaviour {
         runSchedule();
     }
 
+    public void placePlayerOnFirstCar(GameObject player)
+    {
+        GameObject car = runningCars[0].left;
+
+        player.transform.position = car.transform.position;
+    }
+
+
     void createSchduledVehicles()
     {
-        foreach (ScheduleEntry e in queue.getCurrentEntries(Time.time))
+        foreach (ScheduleEntry e in queue.getCurrentEntries(Time.time - startTime))
         {
             GameObject car = spawner.createCar(e);
             runningCars.Add(new Tuple<GameObject, ScheduleEntry>(car, e));
@@ -62,7 +89,7 @@ public class TrafficController : MonoBehaviour {
         bool removeVehicle = false;
         foreach (TrafficEvent e in entry.events)
         {
-            if (e.occuring(Time.time))
+            if (e.occuring(Time.time - startTime))
             {
                 if (e.type == TrafficEvent.types.Accelerate)
                 {
