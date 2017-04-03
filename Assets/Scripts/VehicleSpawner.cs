@@ -26,7 +26,7 @@ public class VehicleSpawner : MonoBehaviour
     private System.Random rand;
     private GameObject[] currVehicles;
     private float lastFetchFrame;
-    private const int maxMoveAttempts = 10;
+    private const int maxMoveAttempts = 20;
 
     void Start()
     {
@@ -79,11 +79,11 @@ public class VehicleSpawner : MonoBehaviour
         float dY = 0.0f;
         if (appearAtBottom)
         {
-            dY = -yOffset * 0.05f;
+            dY = -yOffset * 0.1f;
         }
         else
         {
-            dY = +yOffset * 0.05f;
+            dY = +yOffset * 0.1f;
         }
 
         vehicleObj.transform.Translate(new Vector3(0, dY));

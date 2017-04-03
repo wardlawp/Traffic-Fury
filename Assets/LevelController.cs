@@ -4,7 +4,7 @@ using System.Collections;
 public class LevelController : MonoBehaviour {
 
     public Player player;
-    public float levelResetPause = 3f;
+    public float levelResetPause = 1.5f;
     private float respawnDelay = 0.5f;
 
     private AudioSource audioS;
@@ -25,7 +25,15 @@ public class LevelController : MonoBehaviour {
         trafficController = GetComponent<TrafficController>();
 
         trafficController.setQueue(LevelQue.get());
-	}
+        //testJumpAhead(LevelQue.SEQUENCE_3_START);
+    }
+
+    void testJumpAhead(float time)
+    {
+        gameState = States.Died;
+        playerDiedTime = Time.time;
+        currentLevelProgress = time;
+    }
 
 	void Update () {
 
@@ -41,7 +49,7 @@ public class LevelController : MonoBehaviour {
         if ((gameState == States.Died) && (Time.time > (playerDiedTime + levelResetPause)))
         {
             //Calculate time in level to reset to
-            float checkpointTime = LevelQue.findCheckpointTime(currentLevelProgress);
+            float checkpointTime = LevelQue.findCheckpointTime(currentLevelProgress); //this should be playerDiedTime
             currentLevelProgress = checkpointTime;
             
 
