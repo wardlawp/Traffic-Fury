@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using Traffic;
 
 public class VehicleSpawnerException : System.Exception
@@ -34,9 +35,9 @@ public class VehicleSpawner : MonoBehaviour
         rand = new System.Random();
     }
 
-    public GameObject createCar(ScheduleEntry e)
+    public GameObject createCar(ScheduleEntry e, ref List<Tuple<GameObject, ScheduleEntry>> runningCars)
     {
-        Vector3 position = calculateVehicleStartPosition(e.lane, e.appearAtBottom());
+        Vector3 position = calculateVehicleStartPosition(e, ref runningCars);
 
         GameObject car = (GameObject)Instantiate(
                 carProtoTypes[rand.Next(0, carProtoTypes.Length)],
@@ -89,6 +90,7 @@ public class VehicleSpawner : MonoBehaviour
         vehicleObj.transform.Translate(new Vector3(0, dY));
     }
 
+    //TODO refactor to user runningCars
     private bool isVehicleColliding(GameObject vehicleObj)
     {
         GameObject[] otherCars = getVehicles();
@@ -121,22 +123,46 @@ public class VehicleSpawner : MonoBehaviour
     }
 
 
-    private Vector3 calculateVehicleStartPosition(int lane, bool appearAtBottom)
+    private Vector3 calculateVehicleStartPosition(ScheduleEntry e, ref List<Tuple<GameObject, ScheduleEntry>> runningCars)
     {
+        TrafficEvent appearance = e.appearance();
         float dx = (rightLaneX - leftLaneX) / numLanes;
-        float x = leftLaneX + dx * (lane - 0.5f);
+        float x = leftLaneX + dx * (e.lane - 0.5f);
 
-        float y = levelCamera.transform.position.y;
-
-        if (appearAtBottom)
+        if(appearance.otherScheduleRef != null)
         {
-            y -= yOffset;
-        }
+            float othervehicleY = getOtherVehicleY(appearance.otherScheduleRef, ref runningCars);
+            return new Vector3(x, othervehicleY + appearance.relativeDistance, 0);
+        } 
         else
         {
-            y += yOffset;
+
+            float y = levelCamera.transform.position.y;
+
+            if (appearance.appearAtBottom)
+            {
+                y -= yOffset;
+            }
+            else
+            {
+                y += yOffset;
+            }
+
+            return new Vector3(x, y, 0);
+        }
+    }
+
+    private float getOtherVehicleY(int? id, ref List<Tuple<GameObject, ScheduleEntry>> runningCars)
+    {
+        foreach (Tuple<GameObject, ScheduleEntry> runningCar in runningCars)
+        {
+            if(runningCar.right.id == id)
+            {
+                return runningCar.left.transform.position.y;
+            }
+
         }
 
-        return new Vector3(x, y, 0);
+        throw new VehicleSpawnerException("Could not find referenced vehicle");
     }
 }

@@ -43,6 +43,23 @@ namespace Traffic
             return this;
         }
 
+        public ScheduleEntryBuilder appearRelative(float time, float speed, ScheduleEntry other, float distance)
+        {
+            TrafficEvent e = new TrafficEvent();
+            
+
+            e.type = TrafficEvent.types.Appear;
+            e.relativeDistance = distance;
+            e.otherScheduleRef = other.id;
+            e.appearAtBottom = (distance < 0);
+            e.time = time;
+            e.speed = speed;
+
+            entry.events.Add(e);
+
+            return this;
+        }
+
         public ScheduleEntryBuilder accelerateAt(float time, float rate, float accelDuration)
         {
             TrafficEvent e = new TrafficEvent();

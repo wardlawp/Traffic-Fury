@@ -5,8 +5,12 @@ namespace Traffic
 {
     public class ScheduleEntry
     {
+        private static int idxIncrementer = 1;
+        public int id;
+
         public ScheduleEntry()
         {
+            id = idxIncrementer++;
             events = new List<TrafficEvent>();
         }
 
@@ -65,11 +69,17 @@ namespace Traffic
         public enum types { Appear, Accelerate, InitiateExplosion, Explode };
         public types type;
 
+        //Appear at time data
         public bool appearAtBottom;
         public float time;
 
+        //Appear relative information
+        public int? otherScheduleRef = null;
+        public float relativeDistance;
+
         public float speed;
 
+        //Acceleration Information
         public float duration;
         public float rate;
 

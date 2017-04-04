@@ -25,7 +25,7 @@ public class LevelController : MonoBehaviour {
         trafficController = GetComponent<TrafficController>();
 
         trafficController.setQueue(LevelQue.get());
-        testJumpAhead(LevelQue.SEQUENCE_4_START);
+        testJumpAhead(LevelQue.SEQUENCE_5_START);
     }
 
     void testJumpAhead(float time)

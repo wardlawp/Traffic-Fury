@@ -51,7 +51,7 @@ public class TrafficController : MonoBehaviour {
     {
         foreach (ScheduleEntry e in queue.getCurrentEntries(currentRunTime()))
         {
-            GameObject car = spawner.createCar(e);
+            GameObject car = spawner.createCar(e, ref runningCars);
             runningCars.Add(new Tuple<GameObject, ScheduleEntry>(car, e));
         }
     }
