@@ -8,6 +8,7 @@ static class LevelQue
     public const float SEQUENCE_3_START = 42.7f;
     public const float SEQUENCE_4_START = 58.2f;
     public const float SEQUENCE_5_START = 70.2f;
+    public const float SEQUENCE_6_START = 86.0f;
 
     /// <summary>
     /// The vehicle sequence for the entire level
@@ -38,8 +39,12 @@ static class LevelQue
         {
             addSequence4(ref queue, SEQUENCE_4_START - skipForwardTime);
         }
+        if (shouldScheduleSequence(skipForwardTime, SEQUENCE_6_START))
+        {
+            addSequence5(ref queue, SEQUENCE_5_START - skipForwardTime);
+        }
 
-        addSequence5(ref queue, SEQUENCE_5_START - skipForwardTime);
+        addSequence6(ref queue, SEQUENCE_6_START - skipForwardTime);
 
         return queue;
     }
@@ -68,8 +73,12 @@ static class LevelQue
         {
             return SEQUENCE_4_START;
         }
+        else if (playerTimeOfDeath < SEQUENCE_6_START)
+        {
+            return SEQUENCE_5_START;
+        }
 
-        return SEQUENCE_5_START;
+        return SEQUENCE_6_START;
     }
 
     /// <summary>
@@ -382,8 +391,8 @@ static class LevelQue
         ScheduleEntryBuilder.start()
             .setLane(6)
             .appearAt(time + 11.5f, 4f, false)
-            .accelerateAt(time + 12.5f, -1.0f, 1f)
-            .accelerateAt(time + 13.5f, 2.0f, 2f)
+            .accelerateAt(time + 12.5f, -1.0f, 0.5f)
+            .accelerateAt(time + 13f, 1f, 1.7f)
             .explodeAt(time + 15.5f)
             .get()
         );
@@ -396,26 +405,28 @@ static class LevelQue
         ScheduleEntry first = ScheduleEntryBuilder.start()
             .setLane(5)
             .appearAt(time, 2f)
-            .accelerateAt(time + 1f, 1.4f, 1f)
-            .explodeAt(time + 2f)
+            .accelerateAt(time + 2f, 1.4f, 1f)
+            .explodeAt(time + 4f)
             .get();
 
         queue.addEntry(first);
+
 
         queue.addEntry(
         ScheduleEntryBuilder.start()
             .setLane(4)
             .appearRelative(time, 2f, first, -0.7f)
-            .accelerateAt(time + 3.5f, 1f, 1f)
-            .explodeAt(time + 3.5f)
+            //.accelerateAt(time + 3.5f, 1f, 1f)
+            .explodeAt(time + 6f)
             .get()
         );
 
+        time += 1.5f;
 
         ScheduleEntry third = ScheduleEntryBuilder.start()
             .setLane(3)
             .appearAt(time + 2f, 4f, false)
-            .explodeAt(time + 4.2f)
+            .explodeAt(time + 5)
             .accelerateAt(time + 3f, 0.4f, 1f)
             .get();
 
@@ -461,7 +472,7 @@ static class LevelQue
             .setLane(1)
             .appearAt(time + 3.6f, 5.5f, false)
             .explodeAt(time + 8f)
-            .accelerateAt(time +3.7f, 0.3f, 2f)
+            .accelerateAt(time + 3.7f, 0.3f, 2f)
             .get()
         );
 
@@ -469,7 +480,7 @@ static class LevelQue
         ScheduleEntryBuilder.start()
             .setLane(1)
             .appearAt(time + 4f, 5.5f, false)
-            .explodeAt(time + 9.2f)
+            .explodeAt(time + 10f)
             .accelerateAt(time + 5.4f, 0.7f, 2f)
             .accelerateAt(time + 7.5f, -0.7f, 2f)
             .get()
@@ -486,29 +497,215 @@ static class LevelQue
         queue.addEntry(
         ScheduleEntryBuilder.start()
            .setLane(2)
-           .appearAt(time + 8f, 7f, false)
-           .explodeAt(time + 10f)
-           .accelerateAt(time + 9f, -2f, 1f)
+           .appearAt(time + 7f, 7f, false)
+           .explodeAt(time + 11f)
+           .accelerateAt(time + 9.5f, -2f, 1f)
            .get()
         );
 
         queue.addEntry(
         ScheduleEntryBuilder.start()
            .setLane(3)
-           .appearAt(time + 8.5f, 7f, false)
-           .explodeAt(time + 10.5f)
-           .accelerateAt(time + 11f, -2f, 1f)
+           .appearAt(time + 7.5f, 7f, false)
+           .accelerateAt(time + 10f, -2f, 1f)
+           .explodeAt(time + 12f)
            .get()
         );
 
         queue.addEntry(
         ScheduleEntryBuilder.start()
            .setLane(4)
-           .appearAt(time + 11f, 7f, false)
-           .explodeAt(time + 13f)
-           .accelerateAt(time + 12f, -2f, 1f)
+           .appearAt(time + 8.5f, 7f, false)
+           .accelerateAt(time + 10.5f, -2f, 1f)
+           .explodeAt(time + 13.5f)
            .get()
         );
+
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+           .setLane(5)
+           .appearAt(time + 10f, 7f, false)
+           .accelerateAt(time + 11f, -2f, 1f)
+           .explodeAt(time + 14f)
+           .get()
+        );
+
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+           .setLane(6)
+           .appearAt(time + 11f, 7f, false)
+           .accelerateAt(time + 11.5f, -2f, 1f)
+           .accelerateAt(time + 15.5f, -1f, 1f)
+           .explodeAt(time + 18f)
+           .get()
+        );
+
+    }
+
+    static void addSequence6(ref Queue queue, float time)
+    {
+        ScheduleEntry first = ScheduleEntryBuilder.start()
+            .setLane(5)
+            .appearAt(time, 6f, false)
+            .explodeAt(time + 3.7f)
+            .get();
+
+        queue.addEntry(first);
+
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
+              .setLane(4)
+              .appearRelative(time, 6f,first, 0.3f)
+              .explodeAt(time + 4.3f)
+              .get()
+        );
+
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
+              .setLane(1)
+              .appearRelative(time, 6f, first, 0.3f)
+              .accelerateAt(time + 3f, -1f, .4f)
+              .accelerateAt(time + 5f, -.5f, .7f)
+              .explodeAt(time + 8f)
+              .get()
+        );
+
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
+             .setLane(3)
+             .appearRelative(time, 6f, first, 0.3f)
+             .explodeAt(time + 5.3f)
+             .get()
+       );
+
+        queue.addEntry(
+          ScheduleEntryBuilder.start()
+             .setLane(3)
+             .appearRelative(time, 6f, first, 1.3f)
+             .accelerateAt(time + 5.3f, -3f, 1f)
+             .accelerateAt(time + 6.3f, +2.2f, 1f)
+             .explodeAt(time + 7f)
+             .get()
+       );
+
+        queue.addEntry(
+            ScheduleEntryBuilder.start()
+            .setLane(3)
+            .appearAt(time + 5.3f , 5.5f, false)
+            .explodeAt(time + 8f)
+            .get()
+        );
+
+        queue.addEntry(
+           ScheduleEntryBuilder.start()
+           .setLane(2)
+           .appearAt(time + 5.3f, 5.5f, false)
+           .accelerateAt(time + 7f, -1.0f, 2f)
+           .explodeAt(time + 8.5f)
+           .get()
+       );
+
+        //
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(1)
+            .appearAt(time + 6.5f, 6f, false)
+            .accelerateAt(time + 8f, -1.0f, 2.5f)
+            .explodeAt(time + 9.8f)
+            .get()
+        );
+
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(2)
+            .appearAt(time + 6.8f, 5.5f, false)
+            .accelerateAt(time + 8.5f, 1.2f, 2f)
+            .accelerateAt(time + 9.5f, -1.5f, 2f)
+            .explodeAt(time + 10.5f)
+            .get()
+        );
+       
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(3)
+            .appearAt(time + 7.3f, 5.5f, false)
+            .accelerateAt(time + 8.5f, 1.2f, 2f)
+            .accelerateAt(time + 10f, -1.5f, 2f)
+            .explodeAt(time + 11.6f)
+            .get()
+        );
+        
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(2)
+            .appearAt(time + 8.1f, 5.9f, false)
+            .accelerateAt(time + 9.3f, 1.2f, 2f)
+            .accelerateAt(time + 10.7f, -1.4f, 2f)
+            .explodeAt(time + 12.4f)
+            .get()
+        );
+
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(3)
+            .appearAt(time + 8.5f, 5f, false)
+            .accelerateAt(time + 9f, 1.4f, 2f)
+            .explodeAt(time + 14.2f)
+            .get()
+        );
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(2)
+            .appearAt(time + 10f, 5f, false)
+            .accelerateAt(time + 10.2f, 2f, 2f)
+            .explodeAt(time + 14.5f)
+            .get()
+        );
+
+       queue.addEntry(
+       ScheduleEntryBuilder.start()
+           .setLane(1)
+           .appearAt(time + 10.5f, 5f, false)
+           .accelerateAt(time + 10.7f, 2.2f, 2f)
+           .explodeAt(time + 15.1f)
+           .get()
+       );
+
+        ScheduleEntry train = ScheduleEntryBuilder.start()
+           .setLane(0)
+           .appearAt(time + 13f, 11.5f, false)
+           .get();
+
+        train.carId = 1;
+        train.xOverride = -3.86f;
+        queue.addEntry(train);
+        /*
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(3)
+            .appearAt(time + 8.5f, 5f, false)
+            .accelerateAt(time + 9.5f, -1.5f, 2f)
+            .explodeAt(time + 11.5f)
+            .get()
+        );
+
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(4)
+            .appearAt(time + 9.5f, 5f, false)
+            .accelerateAt(time + 10.5f, -1.5f, 2f)
+            .explodeAt(time + 12.5f)
+            .get()
+        );
+
+        queue.addEntry(
+        ScheduleEntryBuilder.start()
+            .setLane(3)
+            .appearAt(time + 10.5f, 5f, false)
+            .accelerateAt(time + 11.5f, -1.5f, 2f)
+            .explodeAt(time + 13.5f)
+            .get()
+        );*/
 
 
 

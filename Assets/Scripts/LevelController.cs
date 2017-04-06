@@ -25,7 +25,7 @@ public class LevelController : MonoBehaviour {
         trafficController = GetComponent<TrafficController>();
 
         trafficController.setQueue(LevelQue.get());
-        testJumpAhead(LevelQue.SEQUENCE_5_START);
+        //testJumpAhead(LevelQue.SEQUENCE_4_START);
     }
 
     void testJumpAhead(float time)
@@ -49,7 +49,7 @@ public class LevelController : MonoBehaviour {
         if ((gameState == States.Died) && (Time.time > (playerDiedTime + levelResetPause)))
         {
             //Calculate time in level to reset to
-            float checkpointTime = LevelQue.findCheckpointTime(currentLevelProgress); //this should be playerDiedTime
+            float checkpointTime = LevelQue.findCheckpointTime(currentLevelProgress - levelResetPause);
             currentLevelProgress = checkpointTime;
             
 

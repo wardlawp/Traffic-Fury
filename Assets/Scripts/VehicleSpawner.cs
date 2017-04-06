@@ -40,18 +40,18 @@ public class VehicleSpawner : MonoBehaviour
         Vector3 position = calculateVehicleStartPosition(e, ref runningCars);
 
         GameObject car = (GameObject)Instantiate(
-                carProtoTypes[rand.Next(0, carProtoTypes.Length)],
+                carProtoTypes[e.carId],
                 position,
                 new Quaternion()
             );
 
-        adjustCarToAvoidCollision(car, e.appearAtBottom());
+        adjustCarToAvoidCollision(car, e.appearAtBottom(), ref runningCars);
 
         car.GetComponent<Vehicle>().speed = e.appearance().speed;
         return car;
     }
 
-    private void adjustCarToAvoidCollision(GameObject vehicleObj, bool appearAtBottom)
+    private void adjustCarToAvoidCollision(GameObject vehicleObj, bool appearAtBottom, ref List<Tuple<GameObject, ScheduleEntry>> runningCars)
     {
         bool colliding = true;
         int attempts = 0;
@@ -59,7 +59,7 @@ public class VehicleSpawner : MonoBehaviour
         while (colliding && (attempts < maxMoveAttempts))
         {
 
-            colliding = isVehicleColliding(vehicleObj);
+            colliding = isVehicleColliding(vehicleObj, ref runningCars);
 
             if (colliding)
             {
@@ -91,16 +91,16 @@ public class VehicleSpawner : MonoBehaviour
     }
 
     //TODO refactor to user runningCars
-    private bool isVehicleColliding(GameObject vehicleObj)
+    private bool isVehicleColliding(GameObject vehicleObj, ref List<Tuple<GameObject, ScheduleEntry>> runningCars)
     {
-        GameObject[] otherCars = getVehicles();
+
         Renderer vehicleImage = vehicleObj.GetComponent<Renderer>();
 
-        foreach (GameObject otherCar in otherCars)
+        foreach (Tuple<GameObject, ScheduleEntry> otherCar in runningCars)
         {
-            if (otherCar == vehicleObj) continue;
+            if (otherCar.left == vehicleObj) continue;
 
-            Renderer otherImage = otherCar.GetComponent<Renderer>();
+            Renderer otherImage = otherCar.left.GetComponent<Renderer>();
 
             if (vehicleImage.bounds.Intersects(otherImage.bounds))
             {
@@ -127,7 +127,17 @@ public class VehicleSpawner : MonoBehaviour
     {
         TrafficEvent appearance = e.appearance();
         float dx = (rightLaneX - leftLaneX) / numLanes;
-        float x = leftLaneX + dx * (e.lane - 0.5f);
+        float x;
+
+        if(e.xOverride == 0)
+        {
+            x = leftLaneX + dx * (e.lane - 0.5f);
+        }
+        else
+        {
+            x = e.xOverride;
+        }
+        
 
         if(appearance.otherScheduleRef != null)
         {

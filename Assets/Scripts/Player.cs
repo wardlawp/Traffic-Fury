@@ -102,7 +102,17 @@ public class Player : PlatformRider
     void handlePlatformMovment(Vector3 timeNormalizedInput)
     {
         Vector3 playerMotion = new Vector3(timeNormalizedInput.x * playerSpeed, (timeNormalizedInput.y * playerSpeed) + platformSpeed*Time.deltaTime, 0);
-        movePlayer(playerMotion);
+
+        //Debug.Log(transform.position);
+        if(findPlatformVehicle(transform.position + playerMotion) != null)
+        {
+            movePlayer(playerMotion);
+        } 
+        else
+        {
+            movePlayer(new Vector3(0, platformSpeed * Time.deltaTime,0));
+        }
+        
     }
 
     void startJump()

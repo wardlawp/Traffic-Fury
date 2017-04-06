@@ -7,6 +7,8 @@ namespace Traffic
     {
         private static int idxIncrementer = 1;
         public int id;
+        public int carId = 0;
+        public float xOverride = 0;
 
         public ScheduleEntry()
         {
